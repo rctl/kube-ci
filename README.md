@@ -38,12 +38,12 @@ First you need to verify your kube-ci domain to be able receive Pub/Sub updated 
 Go into API Manager -> Credentials -> Add domain in Google Cloud Console.
 Add the domain you setup in the previous step.
 
-![Google Cloud setup](https://raw.githubusercontent.com/rctl/kube-ci/master/images/verify-domain.png)
+![Google Cloud setup](https://raw.githubusercontent.com/rctl/kube-ci/master/images/verify-domain.png | width=150)
 
 Go into Pub/Sub -> Topics -> projects/your-project/topics/cloud-builds -> Create Subscription
 Create a Pub/Sub subscription for kube-ci, use the same domain and write key you used in the previous step.
 
-![Google Cloud setup](https://raw.githubusercontent.com/rctl/kube-ci/master/images/pub-sub.png)
+![Google Cloud setup](https://raw.githubusercontent.com/rctl/kube-ci/master/images/pub-sub.png | width=150)
 
 **Setup a build trigger**
 
@@ -51,7 +51,7 @@ Go into Cloud Build -> Build Triggers -> Add Trigger and select a repo and setti
 
 Example:
 
-![Google Cloud setup](https://raw.githubusercontent.com/rctl/kube-ci/master/images/trigger.png)
+![Google Cloud setup](https://raw.githubusercontent.com/rctl/kube-ci/master/images/trigger.png | width=150)
 
 You trigger will automatically build your Docker Container when you push to a specific branch or tag.
 This will then update kube-ci through Pub/Sub which will update your Kubernetes Deployments.
