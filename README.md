@@ -84,11 +84,11 @@ kube-ci has an HTTP API that can be used to fetch build statueses.
 
 Access build statueses from inside the cluster with:
 
-`curl http://kube-ci/deployments`
+`curl http://kube-ci/`
 
 If you have set a read token use the following:
 
-`curl http://kube-ci/deployments?token=my-read-token`
+`curl http://kube-ci/?token=my-read-token`
 
 **From the Internet**
 

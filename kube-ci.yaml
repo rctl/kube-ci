@@ -23,12 +23,12 @@ spec:
         readinessProbe:
           httpGet:
             path: /healthz
-            port: 80
+            port: 8080
           periodSeconds: 5
           successThreshold: 2
           failureThreshold: 2
         ports:
-        - containerPort: 80
+        - containerPort: 8080
         # Use a custom service account to access Google Cloud Pub/Sub
         # You can use this if your kubernetes cluster is not already authorized to access Pub/Sub
         # Use kubectl create secret generic pubsub-service-account --from-file=google_service_account.json to create your secret.
@@ -50,7 +50,7 @@ spec:
   ports:
   - port: 80
     name: kube-ci
-    targetPort: 80
+    targetPort: 8080
     protocol: TCP
   selector:
     app: kube-ci
