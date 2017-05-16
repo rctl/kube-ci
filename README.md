@@ -17,33 +17,13 @@ metadata:
 ```
 Annotate your Kubernetes Deployment with *kube-ci: "true"* to enable automatic updates.
 
-### Google Container Engine
+### Setup with Google Container Engine
 
-kube-ci works best with GKE but can be customized to work with any Kubernetes or build setups. The following steps will guide you through setting up Google Cloud Builder with GitHub and setup kube-ci with your GKE cluster.
+kube-ci works best with GKE but can be customized to work with any Kubernetes or build setups. The following steps will guide you through setting up Google Cloud Builder with GitHub and setup kube-ci with your GKE cluster. Your GKE cluster need read access to Pub/Sub for kube-ci to work properly.
 
-**Configure kube-ci deployment**
+**Deploy kube-ci in Kubernetes**
 
-Update *kube-ci.yaml* to reflect your own settings.
-
-- Change *my-kube-ci-domain.example.com* to a domain name that you can use to serve kube-ci in your cluster.
-- Recommended: Enable TLS for your Kubernetes Ingress by editing the Ingress configuration.
-- Change *my-read-token* to a secure, random, key that will be used for read access in kube-ci.
-- Change *my-write-token* to a secure, random, key that will be used for write access in kube-ci.
-
-`kubectl apply -f kube-ci.yaml`
-
-**Setup Pub/Sub**
-
-First you need to verify your kube-ci domain to be able receive Pub/Sub updated on your Cloud Builds.
-Go into API Manager -> Credentials -> Add domain in Google Cloud Console.
-Add the domain you setup in the previous step.
-
-![Google Cloud setup](https://raw.githubusercontent.com/rctl/kube-ci/master/images/verify-domain.png)
-
-Go into Pub/Sub -> Topics -> projects/your-project/topics/cloud-builds -> Create Subscription
-Create a Pub/Sub subscription for kube-ci, use the same domain and write key you used in the previous step.
-
-![Google Cloud setup](https://raw.githubusercontent.com/rctl/kube-ci/master/images/pub-sub.png)
+Run `kubectl apply -f kube-ci.yaml` to deploy kube-ci.
 
 **Setup a build trigger**
 
@@ -56,7 +36,7 @@ Example:
 You trigger will automatically build your Docker Container when you push to a specific branch or tag.
 This will then update kube-ci through Pub/Sub which will update your Kubernetes Deployments.
 
-**Create your Kubernetes Deployment and enable kube-ci**
+**Create or update your Kubernetes Deployment to enable kube-ci**
 
 Create (or edit and existing) deployment in Kubernetes that uses the image you created your build trigger for.
 
@@ -97,11 +77,55 @@ spec:
 
 Push to your repository and observe your deployment being automatically updated when your Cloud Build finishes.
 
+### kube-ci HTTP API
+
+kube-ci has an HTTP API that can be used to fetch build statueses.
 **Get statuses**
 
-You can use your kube-ci read token to get statueses for your builds:
+Access build statueses from inside the cluster with:
 
-`curl https://my-kube-ci-domain.example.com/deployments?token=my-read-token`
+`curl http://kube-ci/deployments`
+
+If you have set a read token use the following:
+
+`curl http://kube-ci/deployments?token=my-read-token`
+
+**From the Internet**
+
+It is safe to expose kube-ci to the internet. If kube-ci is exposed to the internet it is recommended to use a read token and TLS. Configure this with your own ingress controller.
+
+### Custom Service Account
+
+**If your cluster does not have access to Pub/Sub by default** you can enable access by setting up kube-ci with a service account secret.
+Create your service account in the cloud config (with access to Pub/Sub scopes) and use the following command to add it to kubernetes `kubectl create secret generic pubsub-service-account --from-file=google_service_account.json`.
+
+To configure kube-ci to access Pub/Sub with the service account from your kubernetes secret with this yaml config:
+
+``` yaml
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: kube-ci
+spec:
+  template:
+    metadata:
+      labels:
+        app: kube-ci
+    spec:
+      containers:
+      - name: kube-ci
+        image: rctl/kube-ci:1.1.5-alpha
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: serviceaccount
+          mountPath: "/go/src/app"
+          readOnly: true
+      volumes:
+      - name: serviceaccount
+        secret:
+          secretName: "pubsub-service-account"
+```
 
 ### License
 

@@ -14,12 +14,12 @@ spec:
     spec:
       containers:
       - name: kube-ci
-        image: rctl/kube-ci:1.1.1-alpha
-        env:
-        - name: KUBE_CI_WRITE_TOKEN
-          value: "my-write-token"
-        - name: KUBE_CI_READ_TOKEN
-          value: "my-read-token"
+        image: rctl/kube-ci:1.1.9-alpha
+        # Set read token to enable token based authentication on the HTTP API
+        # It is recommended, but not required, to set the token if you are exposing kube-ci on the web
+        # env:
+        # - name: KUBE_CI_READ_TOKEN
+        #   value: "my-read-token"
         readinessProbe:
           httpGet:
             path: /healthz
@@ -29,6 +29,18 @@ spec:
           failureThreshold: 2
         ports:
         - containerPort: 80
+        # Use a custom service account to access Google Cloud Pub/Sub
+        # You can use this if your kubernetes cluster is not already authorized to access Pub/Sub
+        # Use kubectl create secret generic pubsub-service-account --from-file=google_service_account.json to create your secret.
+        # You cannot change the file name google_service_account.json, use this when creating your secret.
+        # volumeMounts:
+        # - name: serviceaccount
+        #   mountPath: "/go/src/app"
+        #   readOnly: true
+      # volumes:
+      # - name: serviceaccount
+      #   secret:
+      #     secretName: "pubsub-service-account"
 ---
 apiVersion: v1
 kind: Service
@@ -42,19 +54,3 @@ spec:
     protocol: TCP
   selector:
     app: kube-ci
----
-apiVersion: extensions/v1beta1
-kind: Ingress
-metadata:
-  name: kube-ci
-  annotations:
-    kubernetes.io/ingress.class: "nginx"
-spec:
-  rules:
-  - host: my-kube-ci-domain.example.com
-    http:
-      paths:
-      - path: /
-        backend:
-          serviceName: kube-ci
-          servicePort: 80
