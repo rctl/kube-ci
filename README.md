@@ -17,6 +17,8 @@ metadata:
 ```
 Annotate your Kubernetes Deployment with *kube-ci: "true"* to enable automatic updates.
 
+> **Note!** This project has not been used in production by the creator (rctl) since end of 2017. Therefore I would strongly advice to do thurough testing before using it in a production environment. Feel free to leave any issues for feedback. The project is still maintained on request.
+
 ### Setup with Google Container Engine
 
 kube-ci works best with GKE but can be customized to work with any Kubernetes or build setups. The following steps will guide you through setting up Google Cloud Builder with GitHub and setup kube-ci with your GKE cluster. Your GKE cluster need read access to Pub/Sub for kube-ci to work properly.
